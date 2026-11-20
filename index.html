@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>أ. أنفال ثابت | منصة علوم الطبيعة والحياة - التعليم الثانوي</title>
+  <!-- خطوط جوجل العربية -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <!-- ملف التنسيق الخارجي -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- الخلفية الحيوية المتحركة (خلايا وجزيئات) -->
+  <canvas id="bio-canvas" aria-hidden="true"></canvas>
+
+  <!-- الهيدر وشريط التنقل -->
+  <header class="navbar">
+    <div class="container nav-inner">
+      <a href="#hero" class="brand">
+        <div class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 36 36" fill="none">
+            <path d="M11 4C11 12 25 14 25 22C25 28 11 30 11 32" stroke="#10b981" stroke-width="2.6" stroke-linecap="round"/>
+            <path d="M25 4C25 12 11 14 11 22C11 28 25 30 25 32" stroke="#0d9488" stroke-width="2.6" stroke-linecap="round"/>
+            <line x1="13" y1="9" x2="23" y2="9" stroke="#34d399" stroke-width="2" stroke-linecap="round"/>
+            <line x1="13" y1="18" x2="23" y2="18" stroke="#34d399" stroke-width="2" stroke-linecap="round"/>
+            <line x1="13" y1="27" x2="23" y2="27" stroke="#34d399" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">أ. أنفال ثابت</span>
+          <span class="brand-sub">علوم الطبيعة والحياة • الطور الثانوي</span>
+        </div>
+      </a>
+
+      <nav class="nav-links" id="navLinks">
+        <a href="#levels" class="nav-link active" data-target="1as" onclick="selectLevelFromNav(event, '1as')">السنة الأولى (1AS)</a>
+        <a href="#levels" class="nav-link" data-target="2as" onclick="selectLevelFromNav(event, '2as')">السنة الثانية (2AS)</a>
+        <a href="#levels" class="nav-link" data-target="3as" onclick="selectLevelFromNav(event, '3as')">السنة الثالثة - بكالوريا (3AS)</a>
+        <a href="#about" class="nav-link">عن الأستاذة</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="btn-teacher" onclick="openAddModal()" title="إضافة درس أو ملخص أو تمرين جديد">
+          <span>+ إضافة محتوى</span>
+        </button>
+        <button class="menu-toggle" id="menuToggle" aria-label="القائمة">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- القسم الرئيسي (Hero) -->
+  <section id="hero" class="hero">
+    <div class="container hero-grid">
+      <div class="hero-content reveal">
+        <div class="badge-ens">
+          <span class="pulse-dot"></span>
+          <span>خريجة المدرسة العليا للأساتذة (ENS) • أستاذة التعليم الثانوي</span>
+        </div>
+        <h1>
+          استكشف أسرار الحياة مع الأستاذة
+          <span class="gradient-text">أنفال ثابت</span>
+          <span class="en-name">ANFEL TABET</span>
+        </h1>
+        <p class="hero-desc">
+          منصة تعليمية تفاعلية متكاملة لتلاميذ التعليم الثانوي (الأولى، الثانية، والثالثة ثانوي). دروس مفصلة وفق المنهجية الحديثة، ملخصات مركزة، وتمارين نموذجية مرفقة بالحلول لتحقيق التفوق في مادة علوم الطبيعة والحياة.
+        </p>
+        <div class="hero-cta">
+          <a href="#levels" class="btn-primary">ابدأ رحلة التعلم الآن ↓</a>
+          <a href="#about" class="btn-secondary">التعريف بالأستاذة</a>
+        </div>
+        <div class="hero-stats">
+          <div class="stat-item">
+            <strong id="stat-lessons">0</strong>
+            <span>درس تفاعلي</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <strong id="stat-summaries">0</strong>
+            <span>ملخص شامل</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <strong id="stat-exercises">0</strong>
+            <span>تمرين بالحل</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- عنصر بصري حيوي متحرك (حلزون الـ ADN وخلية نباتية) -->
+      <div class="hero-visual reveal">
+        <div class="bio-orb">
+          <div class="orbit orbit-1"><span class="organelle chloroplast"></span></div>
+          <div class="orbit orbit-2"><span class="organelle mitochondria"></span></div>
+          <div class="dna-stage" id="dnaStage" aria-label="حلزون الحمض النووي المتحرك"></div>
+          <div class="floating-tag tag-1">🧬 الوراثة والـ ADN</div>
+          <div class="floating-tag tag-2">🌿 التركيب الضوئي</div>
+          <div class="floating-tag tag-3">🧠 الاتصال العصبي</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- قسم المستويات الدراسية الثلاثة (الخانة الخاصة بكل سنة) -->
+  <section id="levels" class="levels-section">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-kicker">الفضاء البيداغوجي</span>
+        <h2>اختر مستواك الدراسي</h2>
+        <p>لكل سنة دراسية فضاء مستقل يحتوي على الدروس، الملخصات المركزة، وسلاسل التمارين المحلولة</p>
+      </div>
+
+      <!-- بطاقات اختيار السنة الدراسية -->
+      <div class="level-cards">
+        <button class="level-card active" data-level="1as" onclick="switchLevel('1as')">
+          <div class="level-icon">🌱</div>
+          <div class="level-info">
+            <span class="level-code">1AS</span>
+            <h3>السنة الأولى ثانوي</h3>
+            <p>جذع مشترك علوم وتكنولوجيا</p>
+          </div>
+          <span class="level-arrow">←</span>
+        </button>
+
+        <button class="level-card" data-level="2as" onclick="switchLevel('2as')">
+          <div class="level-icon">🔬</div>
+          <div class="level-info">
+            <span class="level-code">2AS</span>
+            <h3>السنة الثانية ثانوي</h3>
+            <p>شعبة علوم تجريبية ورياضيات</p>
+          </div>
+          <span class="level-arrow">←</span>
+        </button>
+
+        <button class="level-card" data-level="3as" onclick="switchLevel('3as')">
+          <div class="level-icon">🧬</div>
+          <div class="level-info">
+            <span class="level-code">3AS • BAC</span>
+            <h3>السنة الثالثة ثانوي</h3>
+            <p>بكالوريا علوم تجريبية ورياضيات</p>
+          </div>
+          <span class="level-arrow">←</span>
+        </button>
+      </div>
+
+      <!-- مساحة العمل الخاصة بالسنة المختارة -->
+      <div class="workspace-panel" id="workspacePanel">
+        <div class="workspace-top">
+          <div class="workspace-title-box">
+            <span class="current-badge" id="currentLevelBadge">السنة الأولى ثانوي (1AS)</span>
+            <h3 id="currentLevelTitle">دروس وملخصات وتمارين السنة الأولى ثانوي</h3>
+          </div>
+
+          <!-- شريط البحث الفوري -->
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="ابحث عن درس، ملخص، أو تمرين..." oninput="renderContent()" />
+          </div>
+        </div>
+
+        <!-- تبويبات الأقسام داخل كل سنة (دروس / ملخصات / تمارين) -->
+        <div class="category-tabs" role="tablist">
+          <button class="cat-tab active" data-cat="all" onclick="switchCategory('all')">
+            <span>📚 الكل</span>
+            <span class="count-pill" id="count-all">0</span>
+          </button>
+          <button class="cat-tab" data-cat="lesson" onclick="switchCategory('lesson')">
+            <span>📖 الدروس</span>
+            <span class="count-pill" id="count-lesson">0</span>
+          </button>
+          <button class="cat-tab" data-cat="summary" onclick="switchCategory('summary')">
+            <span>📝 الملخصات</span>
+            <span class="count-pill" id="count-summary">0</span>
+          </button>
+          <button class="cat-tab" data-cat="exercise" onclick="switchCategory('exercise')">
+            <span>✍️ التمارين والحلول</span>
+            <span class="count-pill" id="count-exercise">0</span>
+          </button>
+        </div>
+
+        <!-- شبكة عرض المحتوى -->
+        <div class="content-grid" id="contentGrid"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- قسم التعريف بالأستاذة -->
+  <section id="about" class="about-section">
+    <div class="container">
+      <div class="about-card reveal">
+        <div class="about-avatar">
+          <div class="avatar-ring">
+            <span>👩‍🏫</span>
+          </div>
+          <span class="ens-stamp">ENS GRADUATE</span>
+        </div>
+        <div class="about-text">
+          <span class="section-kicker">بطاقة تعريفية</span>
+          <h2>الأستاذة أنفال ثابت <small>(ANFEL TABET)</small></h2>
+          <p>
+            أستاذة التعليم الثانوي لمادة <strong>علوم الطبيعة والحياة</strong>، متخرجة من <strong>المدرسة العليا للأساتذة (ENS)</strong>. تهدف هذه المنصة إلى تبسيط المفاهيم البيولوجية والجيولوجية المعقدة وتدريب التلاميذ على منهجية الإجابة العلمية الدقيقة (التحليل، التفسير، الاستنتاج، والنص العلمي) للتحضير الأمثل للاختبارات الفصلية وشهادة البكالوريا.
+          </p>
+          <div class="about-badges">
+            <span>🎓 خريجة المدرسة العليا للأساتذة</span>
+            <span>🔬 تخصص علوم الطبيعة والحياة</span>
+            <span>📑 منهجية الجيل الثاني</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- الفوتر -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div>
+        <strong>منصة الأستاذة أنفال ثابت (ANFEL TABET)</strong>
+        <p>جميع الحقوق محفوظة © 2026 • مادة علوم الطبيعة والحياة للتعليم الثانوي</p>
+      </div>
+      <a href="#hero" class="back-top">العودة إلى الأعلى ↑</a>
+    </div>
+  </footer>
+
+  <!-- نافذة قراءة الدرس / الملخص / التمرين والحل -->
+  <div class="modal-backdrop" id="viewModal" onclick="closeModalOnBackdrop(event, 'viewModal')">
+    <div class="modal-box modal-large" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <div>
+          <span class="modal-meta" id="viewModalMeta"></span>
+          <h3 id="viewModalTitle"></h3>
+        </div>
+        <button class="modal-close" onclick="closeModal('viewModal')" aria-label="إغلاق">✕</button>
+      </div>
+      <div class="modal-body" id="viewModalBody"></div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="window.print()">🖨️ طباعة / حفظ PDF</button>
+        <button class="btn-primary" onclick="closeModal('viewModal')">إغلاق النافذة</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- نافذة لوحة الأستاذة لإضافة درس أو ملخص أو تمرين جديد -->
+  <div class="modal-backdrop" id="addModal" onclick="closeModalOnBackdrop(event, 'addModal')">
+    <div class="modal-box" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <div>
+          <span class="modal-meta">فضاء الأستاذة أنفال ثابت</span>
+          <h3>إضافة محتوى تعليمي جديد</h3>
+        </div>
+        <button class="modal-close" onclick="closeModal('addModal')" aria-label="إغلاق">✕</button>
+      </div>
+      <form class="modal-body form-grid" onsubmit="handleAddContent(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="newLevel">السنة الدراسية</label>
+            <select id="newLevel" required>
+              <option value="1as">السنة الأولى ثانوي (1AS)</option>
+              <option value="2as">السنة الثانية ثانوي (2AS)</option>
+              <option value="3as">السنة الثالثة ثانوي (3AS)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="newCategory">نوع المحتوى</label>
+            <select id="newCategory" onchange="toggleSolutionField()" required>
+              <option value="lesson">📖 درس</option>
+              <option value="summary">📝 ملخص</option>
+              <option value="exercise">✍️ تمرين مع الحل</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="newUnit">المجال / الوحدة التعلمية</label>
+          <input type="text" id="newUnit" placeholder="مثال: المجال الأول - التخصص الوظيفي للبروتينات" required />
+        </div>
+
+        <div class="form-group">
+          <label for="newTitle">عنوان الدرس أو الملخص أو التمرين</label>
+          <input type="text" id="newTitle" placeholder="مثال: آليات تركيب البروتين (الاستنساخ والترجمة)" required />
+        </div>
+
+        <div class="form-group">
+          <label for="newContent">المحتوى العلمي / نص التمرين</label>
+          <textarea id="newContent" rows="5" placeholder="اكتبي تفاصيل الدرس أو الملخص أو نص التمرين هنا..." required></textarea>
+        </div>
+
+        <div class="form-group hidden" id="solutionFieldGroup">
+          <label for="newSolution">الحل النموذجي للتمرين (اختياري)</label>
+          <textarea id="newSolution" rows="4" placeholder="اكتبي عناصر الإجابة والحل النموذجي للتمرين..."></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('addModal')">إلغاء</button>
+          <button type="submit" class="btn-primary">نشر المحتوى في المنصة ✓</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ملف البرمجة والتفاعل الخارجي -->
+  <script src="script.js"></script>
+</body>
+</html>
