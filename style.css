@@ -1140,6 +1140,48 @@ body {
 }
 
 /* =========================================================
+   وضع الأستاذة ونافذة تسجيل الدخول بالرمز السري
+   ========================================================= */
+.teacher-badge-active {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #f59e0b;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.btn-logout {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.btn-logout:hover {
+  background: #fecaca;
+}
+
+.auth-hint {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.auth-error {
+  color: #dc2626;
+  font-size: 0.85rem;
+  font-weight: 700;
+  min-height: 20px;
+}
+
+/* =========================================================
    الحركات (Keyframes Animations)
    ========================================================= */
 @keyframes gentleFloat {

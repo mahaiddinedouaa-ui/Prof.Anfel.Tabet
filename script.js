@@ -1,8 +1,14 @@
 /* =========================================================
-   1. قاعدة البيانات الأولية (دروس، ملخصات، وتمارين لكل سنة)
+   1. إعداد الاتصال بقاعدة بيانات Supabase
    ========================================================= */
-const STORAGE_KEY = 'anfel_tabet_svt_content_v1';
+const SUPABASE_URL = 'https://qjgskmxbkeujmdweqqwn.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable__lxSpN4CQ8O-tZ-1P1oyTA_E7lAKZqh';
 
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* =========================================================
+   2. قاعدة البيانات الأولية (دروس، ملخصات، وتمارين لكل سنة)
+   ========================================================= */
 const defaultContent = [
   // ---------- السنة الأولى ثانوي (1AS) ----------
   {
@@ -26,6 +32,7 @@ const defaultContent = [
 ب) المرحلة الاستوائية: توضع الصبغيات المضاعفة في المستوى الاستوائي للخلية مشكلة اللوحة الاستوائية.
 ج) المرحلة الانفصالية: انشطار الجزء المركزي وهجرة كل كروماتيد نحو أحد قطبي الخلية.
 د) المرحلة النهائية: زوال تحلزن الصبغيات، تشكل الغلاف النووي وانقسام السيتوبلازم للحصول على خليتين بنتين متماثلتين تحملان نفس العدد الصبغي (2ن).`,
+    solution: '',
     isCustom: false
   },
   {
@@ -44,6 +51,7 @@ const defaultContent = [
 
 • التخمر الكحولي (Fermentation):
 هدم جزئي للمادة العضوية في غياب O2 لإنتاج طاقة ضئيلة وطرح CO2 وإيثانول.`,
+    solution: '',
     isCustom: false
   },
   {
@@ -85,6 +93,7 @@ const defaultContent = [
 - مركز عصبي (النخاع الشوكي): يترجم الرسالة الحسية إلى رسالة حركية.
 - ناقل حركي (عصبون حركي): ينقل الرسالة العصبية النابذة عبر الجذر الأمامي.
 - عضو منفذ (العضلة الهيكلية): تستجيب بالتقلص (العضلة الباسطة) بينما تسترخي العضلة المضادة (القابضة) بفضل العصبون الجامع المثبط.`,
+    solution: '',
     isCustom: false
   },
   {
@@ -102,6 +111,7 @@ const defaultContent = [
 2. في حالة القصور السكري (صيام أو مجهود عضلي):
 - تتحسس الخلايا ألفا (α) فتفرز هرمون الغلوكاغون.
 - يحفز الغلوكاغون إماهة الغليكوجين الكبدي وتحرير الغلوكوز في الدم لرفع التحلون.`,
+    solution: '',
     isCustom: false
   },
   {
@@ -143,6 +153,7 @@ const defaultContent = [
 
 3. مرحلة الترجمة (في الهيولى):
 تترجم اللغة النووية (متتالية رامزات الـ ARNm) إلى لغة بروتينية (متتالية أحماض أمينية) على مستوى الريبوزومات بتدخل الـ ARNt الذي ينقل الأحماض الأمينية المنشطة، وتمر بثلاث مراحل: الانطلاق (عند رامزة البدء AUG)، الاستطالة، والنهاية (عند إحدى رامزات التوقف UAA, UAG, UGA).`,
+    solution: '',
     isCustom: false
   },
   {
@@ -159,6 +170,7 @@ const defaultContent = [
 
 • التخصص الوظيفي للإنزيم:
 يرتكز على الموقع الفعال (منطقة التثبيت + منطقة التحفيز) الذي يتكامل بنيوياً مع مادة التفاعل (الركيزة) وفق التكامل المحفز.`,
+    solution: '',
     isCustom: false
   },
   {
@@ -184,11 +196,17 @@ const defaultContent = [
 ];
 
 /* =========================================================
-   2. إدارة الحالة والتخزين المحلي (State Management)
+   3. إدارة الحالة وصلاحيات الأستاذة (State & Auth)
    ========================================================= */
-let contentList = loadContent();
+const TEACHER_PASSCODE = 'ANFEL2026'; // غيّري هذا الرمز السري إلى رمز خاص بالأستاذة
+const TEACHER_SESSION_KEY = 'anfel_tabet_teacher_auth';
+
+let contentList = [];
+let isLoadingContent = true;
 let currentLevel = '1as';
 let currentCategory = 'all';
+let isTeacherLoggedIn = sessionStorage.getItem(TEACHER_SESSION_KEY) === 'true';
+let pendingActionAfterLogin = null;
 
 const levelInfoMap = {
   '1as': {
@@ -205,29 +223,179 @@ const levelInfoMap = {
   }
 };
 
-function loadContent() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+function updateTeacherUI() {
+  const actionsContainer = document.querySelector('.nav-actions');
+  if (!actionsContainer) return;
+
+  let statusEl = document.getElementById('teacherStatusBadge');
+  let logoutBtn = document.getElementById('teacherLogoutBtn');
+
+  if (isTeacherLoggedIn) {
+    if (!statusEl) {
+      statusEl = document.createElement('span');
+      statusEl.id = 'teacherStatusBadge';
+      statusEl.className = 'teacher-badge-active';
+      statusEl.textContent = '👩‍🏫 وضع الأستاذة مفعل';
+      actionsContainer.prepend(statusEl);
     }
-  } catch (e) {
-    console.warn('LocalStorage unavailable:', e);
+    if (!logoutBtn) {
+      logoutBtn = document.createElement('button');
+      logoutBtn.id = 'teacherLogoutBtn';
+      logoutBtn.type = 'button';
+      logoutBtn.className = 'btn-logout';
+      logoutBtn.textContent = 'خروج';
+      logoutBtn.onclick = logoutTeacher;
+      actionsContainer.insertBefore(logoutBtn, document.getElementById('menuToggle'));
+    }
+  } else {
+    if (statusEl) statusEl.remove();
+    if (logoutBtn) logoutBtn.remove();
   }
-  return [...defaultContent];
+
+  renderContent();
 }
 
-function saveContent() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(contentList));
-  } catch (e) {
-    console.warn('Could not save to LocalStorage:', e);
+function requireTeacherAuth(actionCallback) {
+  if (isTeacherLoggedIn) {
+    actionCallback();
+    return;
   }
+  pendingActionAfterLogin = actionCallback;
+  document.getElementById('authError').textContent = '';
+  document.getElementById('teacherPassInput').value = '';
+  document.getElementById('authModal').classList.add('open');
+  setTimeout(() => document.getElementById('teacherPassInput').focus(), 60);
+}
+
+function handleTeacherLogin(event) {
+  event.preventDefault();
+  const inputVal = document.getElementById('teacherPassInput').value;
+  const errorEl = document.getElementById('authError');
+
+  if (inputVal === TEACHER_PASSCODE) {
+    isTeacherLoggedIn = true;
+    sessionStorage.setItem(TEACHER_SESSION_KEY, 'true');
+    errorEl.textContent = '';
+    closeModal('authModal');
+    updateTeacherUI();
+
+    if (typeof pendingActionAfterLogin === 'function') {
+      const fn = pendingActionAfterLogin;
+      pendingActionAfterLogin = null;
+      fn();
+    }
+  } else {
+    errorEl.textContent = 'الرمز السري غير صحيح، يرجى المحاولة مرة أخرى.';
+  }
+}
+
+function logoutTeacher() {
+  isTeacherLoggedIn = false;
+  sessionStorage.removeItem(TEACHER_SESSION_KEY);
+  pendingActionAfterLogin = null;
+  updateTeacherUI();
 }
 
 /* =========================================================
-   3. التنقل بين السنوات والأقسام وعرض البطاقات
+   4. جلب وإضافة وحذف المحتوى عبر Supabase
+   ========================================================= */
+async function loadContentFromDB() {
+  isLoadingContent = true;
+  renderContent();
+
+  const { data, error } = await supabaseClient
+    .from('svt_content')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('خطأ في جلب البيانات من Supabase:', error.message);
+    contentList = [...defaultContent];
+    isLoadingContent = false;
+    renderContent();
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    const initialRows = defaultContent.map(item => ({
+      id: item.id,
+      level: item.level,
+      category: item.category,
+      unit: item.unit,
+      title: item.title,
+      content: item.content,
+      solution: item.solution || '',
+      is_custom: Boolean(item.isCustom)
+    }));
+
+    await supabaseClient.from('svt_content').upsert(initialRows);
+    contentList = [...defaultContent];
+  } else {
+    contentList = data.map(row => ({
+      id: row.id,
+      level: row.level,
+      category: row.category,
+      unit: row.unit,
+      title: row.title,
+      content: row.content,
+      solution: row.solution || '',
+      isCustom: Boolean(row.is_custom)
+    }));
+  }
+
+  isLoadingContent = false;
+  renderContent();
+}
+
+async function handleAddContent(event) {
+  event.preventDefault();
+
+  const level = document.getElementById('newLevel').value;
+  const category = document.getElementById('newCategory').value;
+  const unit = document.getElementById('newUnit').value.trim();
+  const title = document.getElementById('newTitle').value.trim();
+  const content = document.getElementById('newContent').value.trim();
+  const solution = document.getElementById('newSolution').value.trim();
+
+  const newItem = {
+    id: 'svt-' + Date.now(),
+    level,
+    category,
+    unit,
+    title,
+    content,
+    solution: category === 'exercise' ? solution : '',
+    is_custom: true
+  };
+
+  const { error } = await supabaseClient.from('svt_content').insert([newItem]);
+
+  if (error) {
+    alert('تعذر حفظ المحتوى في قاعدة البيانات: ' + error.message);
+    return;
+  }
+
+  event.target.reset();
+  closeModal('addModal');
+  await loadContentFromDB();
+  switchLevel(level);
+}
+
+function deleteItem(id) {
+  requireTeacherAuth(async () => {
+    const { error } = await supabaseClient.from('svt_content').delete().eq('id', id);
+
+    if (error) {
+      alert('تعذر حذف العنصر: ' + error.message);
+      return;
+    }
+
+    await loadContentFromDB();
+  });
+}
+
+/* =========================================================
+   5. التنقل بين السنوات والأقسام وعرض البطاقات
    ========================================================= */
 function selectLevelFromNav(event, level) {
   switchLevel(level);
@@ -236,20 +404,16 @@ function selectLevelFromNav(event, level) {
 function switchLevel(level) {
   currentLevel = level;
 
-  // تحديث بطاقات السنوات
   document.querySelectorAll('.level-card').forEach(card => {
     card.classList.toggle('active', card.dataset.level === level);
   });
 
-  // تحديث روابط الهيدر
   document.querySelectorAll('.nav-link[data-target]').forEach(link => {
     link.classList.toggle('active', link.dataset.target === level);
   });
 
-  // إغلاق قائمة الهاتف إن كانت مفتوحة
   document.getElementById('navLinks').classList.remove('open');
 
-  // تحديث عنوان مساحة العمل
   document.getElementById('currentLevelBadge').textContent = levelInfoMap[level].badge;
   document.getElementById('currentLevelTitle').textContent = levelInfoMap[level].title;
 
@@ -265,21 +429,31 @@ function switchCategory(category) {
 }
 
 function renderContent() {
+  const grid = document.getElementById('contentGrid');
+  if (!grid) return;
+
+  if (isLoadingContent) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <span>🧬</span>
+        <h4>جاري تحميل الدروس والملخصات والتمارين...</h4>
+      </div>
+    `;
+    return;
+  }
+
   const query = document.getElementById('searchInput').value.trim().toLowerCase();
   const levelItems = contentList.filter(item => item.level === currentLevel);
 
-  // تحديث العدادات داخل السنة الحالية
   document.getElementById('count-all').textContent = levelItems.length;
   document.getElementById('count-lesson').textContent = levelItems.filter(i => i.category === 'lesson').length;
   document.getElementById('count-summary').textContent = levelItems.filter(i => i.category === 'summary').length;
   document.getElementById('count-exercise').textContent = levelItems.filter(i => i.category === 'exercise').length;
 
-  // تحديث الإحصائيات العامة في الهيرو
   document.getElementById('stat-lessons').textContent = contentList.filter(i => i.category === 'lesson').length;
   document.getElementById('stat-summaries').textContent = contentList.filter(i => i.category === 'summary').length;
   document.getElementById('stat-exercises').textContent = contentList.filter(i => i.category === 'exercise').length;
 
-  // تصفية العناصر حسب التبويب والبحث
   const filtered = levelItems.filter(item => {
     const matchCat = currentCategory === 'all' || item.category === currentCategory;
     const matchSearch =
@@ -290,7 +464,6 @@ function renderContent() {
     return matchCat && matchSearch;
   });
 
-  const grid = document.getElementById('contentGrid');
   if (filtered.length === 0) {
     grid.innerHTML = `
       <div class="empty-state">
@@ -323,7 +496,7 @@ function renderContent() {
           </div>
           <div class="item-actions">
             <button class="btn-read" onclick="openViewModal('${item.id}')">${meta.btn} ←</button>
-            ${item.isCustom ? `<button class="btn-delete" onclick="deleteItem('${item.id}')">حذف</button>` : ''}
+            ${isTeacherLoggedIn ? `<button class="btn-delete" onclick="deleteItem('${item.id}')">حذف</button>` : ''}
           </div>
         </article>
       `;
@@ -332,7 +505,7 @@ function renderContent() {
 }
 
 /* =========================================================
-   4. النوافذ المنبثقة (عرض الدرس/التمرين وإضافة محتوى)
+   6. النوافذ المنبثقة (عرض الدرس/التمرين وإضافة محتوى)
    ========================================================= */
 function openViewModal(id) {
   const item = contentList.find(i => i.id === id);
@@ -365,48 +538,16 @@ function toggleSolution() {
 }
 
 function openAddModal() {
-  document.getElementById('newLevel').value = currentLevel;
-  toggleSolutionField();
-  document.getElementById('addModal').classList.add('open');
+  requireTeacherAuth(() => {
+    document.getElementById('newLevel').value = currentLevel;
+    toggleSolutionField();
+    document.getElementById('addModal').classList.add('open');
+  });
 }
 
 function toggleSolutionField() {
   const cat = document.getElementById('newCategory').value;
   document.getElementById('solutionFieldGroup').classList.toggle('hidden', cat !== 'exercise');
-}
-
-function handleAddContent(event) {
-  event.preventDefault();
-  const level = document.getElementById('newLevel').value;
-  const category = document.getElementById('newCategory').value;
-  const unit = document.getElementById('newUnit').value.trim();
-  const title = document.getElementById('newTitle').value.trim();
-  const content = document.getElementById('newContent').value.trim();
-  const solution = document.getElementById('newSolution').value.trim();
-
-  const newItem = {
-    id: 'custom-' + Date.now(),
-    level,
-    category,
-    unit,
-    title,
-    content,
-    solution: category === 'exercise' ? solution : '',
-    isCustom: true
-  };
-
-  contentList.unshift(newItem);
-  saveContent();
-
-  event.target.reset();
-  closeModal('addModal');
-  switchLevel(level);
-}
-
-function deleteItem(id) {
-  contentList = contentList.filter(item => item.id !== id);
-  saveContent();
-  renderContent();
 }
 
 function closeModal(modalId) {
@@ -428,7 +569,7 @@ function escapeHTML(str) {
 }
 
 /* =========================================================
-   5. توليد حلزون الـ ADN والخلفية الخلوية المتحركة (Canvas)
+   7. توليد حلزون الـ ADN والخلفية الخلوية المتحركة (Canvas)
    ========================================================= */
 function buildDnaHelix() {
   const stage = document.getElementById('dnaStage');
@@ -460,7 +601,6 @@ function initBioCanvas() {
     height = canvas.height = window.innerHeight;
   });
 
-  // خلايا وجزيئات حيوية تسبح بنعومة في الخلفية
   const cells = Array.from({ length: 24 }, () => ({
     x: Math.random() * width,
     y: Math.random() * height,
@@ -482,7 +622,6 @@ function initBioCanvas() {
       if (c.y < -40) c.y = height + 40;
       if (c.y > height + 40) c.y = -40;
 
-      // الغشاء الهيولي للخلية
       ctx.beginPath();
       ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
       ctx.fillStyle = 'rgba(16, 185, 129, 0.045)';
@@ -491,7 +630,6 @@ function initBioCanvas() {
       ctx.strokeStyle = 'rgba(13, 148, 136, 0.14)';
       ctx.stroke();
 
-      // النواة داخل الخلية
       if (c.hasNucleus) {
         ctx.beginPath();
         ctx.arc(c.x + c.r * 0.18, c.y - c.r * 0.12, c.r * 0.32, 0, Math.PI * 2);
@@ -507,14 +645,14 @@ function initBioCanvas() {
 }
 
 /* =========================================================
-   6. تشغيل الموقع عند التحميل
+   8. تشغيل الموقع عند التحميل
    ========================================================= */
 document.addEventListener('DOMContentLoaded', () => {
   buildDnaHelix();
   initBioCanvas();
-  renderContent();
+  updateTeacherUI();
+  loadContentFromDB();
 
-  // زر القائمة للهاتف
   const menuBtn = document.getElementById('menuToggle');
   if (menuBtn) {
     menuBtn.addEventListener('click', () => {
@@ -522,7 +660,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // إظهار العناصر تدريجياً عند التمرير
   const observer = new IntersectionObserver(
     entries => {
       entries.forEach(entry => {

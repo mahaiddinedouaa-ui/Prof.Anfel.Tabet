@@ -8,6 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <!-- مكتبة قاعدة بيانات Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- ملف التنسيق الخارجي -->
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -238,6 +240,31 @@
         <button class="btn-secondary" onclick="window.print()">🖨️ طباعة / حفظ PDF</button>
         <button class="btn-primary" onclick="closeModal('viewModal')">إغلاق النافذة</button>
       </div>
+    </div>
+  </div>
+
+  <!-- نافذة التحقق من هوية الأستاذة أنفال ثابت -->
+  <div class="modal-backdrop" id="authModal" onclick="closeModalOnBackdrop(event, 'authModal')">
+    <div class="modal-box" role="dialog" aria-modal="true" style="max-width: 430px;">
+      <div class="modal-header">
+        <div>
+          <span class="modal-meta">حماية المحتوى البيداغوجي</span>
+          <h3>دخول الأستاذة أنفال ثابت</h3>
+        </div>
+        <button class="modal-close" onclick="closeModal('authModal')" aria-label="إغلاق">✕</button>
+      </div>
+      <form class="modal-body form-grid" onsubmit="handleTeacherLogin(event)">
+        <div class="form-group">
+          <label for="teacherPassInput">الرمز السري للأستاذة</label>
+          <input type="password" id="teacherPassInput" placeholder="أدخلي الرمز السري..." required autocomplete="current-password" />
+          <span class="auth-hint">مخصص للأستاذة فقط لإضافة الدروس والملخصات والتمارين أو حذفها.</span>
+        </div>
+        <div class="auth-error" id="authError"></div>
+        <div class="modal-footer" style="padding: 12px 0 0; border: none; background: transparent;">
+          <button type="button" class="btn-secondary" onclick="closeModal('authModal')">إلغاء</button>
+          <button type="submit" class="btn-primary">دخول ←</button>
+        </div>
+      </form>
     </div>
   </div>
 
